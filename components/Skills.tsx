@@ -1,64 +1,76 @@
 import React from 'react';
-import { SectionId } from '../types';
 import { SKILLS } from '../constants';
-import { Cpu, Layout, Server, Database, Cloud, Wrench, Users, Globe } from 'lucide-react';
+import { SectionId, Skill, SkillCategory } from '../types';
+import Section from './ui/Section';
+import SectionHeader from './SectionHeader';
+import Card from './ui/Card';
+import Voice from './ui/Voice';
 
-const Skills: React.FC = () => {
-  const categories = Array.from(new Set(SKILLS.map(s => s.category)));
-  
-  const getIcon = (cat: string) => {
-      switch(cat) {
-          case 'frontend': return <Layout className="w-5 h-5" />;
-          case 'backend': return <Server className="w-5 h-5" />;
-          case 'devops': return <Cloud className="w-5 h-5" />;
-          case 'soft skills': return <Users className="w-5 h-5" />;
-          case 'languages': return <Globe className="w-5 h-5" />;
-          default: return <Wrench className="w-5 h-5" />;
-      }
-  };
-
-  return (
-    <section id={SectionId.SKILLS} className="py-24 relative bg-slate-900/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Technical Proficiency</h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
-            A comprehensive overview of my technical stack and expertise levels.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {categories.map((category) => (
-            <div key={category} className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-indigo-500/50 transition-colors duration-300">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 rounded-lg bg-indigo-600/10 text-indigo-400">
-                    {getIcon(category)}
-                </div>
-                <h3 className="text-xl font-semibold text-white capitalize">{category}</h3>
-              </div>
-              
-              <div className="space-y-4">
-                {SKILLS.filter(s => s.category === category).map((skill) => (
-                  <div key={skill.name}>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-slate-300 font-medium text-sm">{skill.name}</span>
-                      <span className="text-slate-500 text-sm">{skill.level}%</span>
-                    </div>
-                    <div className="w-full bg-slate-800 rounded-full h-2">
-                      <div 
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-1000 ease-out"
-                        style={{ width: `${skill.level}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+const groupLabels: Record<SkillCategory, string> = {
+  frontend: 'Frontend',
+  backend: 'Backend',
+  'soft skills': 'Working with people',
+  languages: 'Languages',
 };
+
+const byCategory = (category: SkillCategory) => SKILLS.filter((skill) => skill.category === category);
+
+const Skills: React.FC = () => (
+  <Section id={SectionId.SKILLS}>
+    <SectionHeader
+      eyebrow="Capabilities"
+      title="A practical stack, honestly rated"
+      description="Frontend-first, with enough backend to be useful on both sides of an API contract."
+    />
+
+    <Voice className="mt-6">Percentages are self-assessed. Ask me to prove any of them.</Voice>
+
+    <div className="mt-14 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+      <Card data-reveal className="grid gap-10 p-7 sm:grid-cols-2 sm:p-8">
+        <SkillGroup category="frontend" />
+        <SkillGroup category="backend" />
+      </Card>
+
+      <Card
+        data-reveal
+        style={{ '--reveal-delay': '120ms' } as React.CSSProperties}
+        className="grid gap-10 p-7 sm:p-8"
+      >
+        <SkillGroup category="soft skills" />
+        <SkillGroup category="languages" />
+      </Card>
+    </div>
+  </Section>
+);
+
+const SkillGroup: React.FC<{ category: SkillCategory }> = ({ category }) => (
+  <div>
+    <h3 className="eyebrow">{groupLabels[category]}</h3>
+    <ul className="mt-5 space-y-4">
+      {byCategory(category).map((skill) => (
+        <SkillBar key={skill.name} skill={skill} />
+      ))}
+    </ul>
+  </div>
+);
+
+const SkillBar: React.FC<{ skill: Skill }> = ({ skill }) => (
+  <li>
+    <div className="flex items-baseline justify-between gap-3">
+      <span className="text-[0.9375rem] font-medium text-ink">{skill.name}</span>
+      <span className="font-mono text-[0.6875rem] text-ink-faint">{skill.level}%</span>
+    </div>
+    <div
+      className="mt-2 h-1.5 overflow-hidden rounded-pill bg-paper-deep"
+      role="img"
+      aria-label={`${skill.name}: ${skill.level} out of 100, self-assessed`}
+    >
+      <div
+        className="skill-fill h-full rounded-pill bg-cobalt"
+        style={{ width: `${skill.level}%` }}
+      />
+    </div>
+  </li>
+);
 
 export default Skills;

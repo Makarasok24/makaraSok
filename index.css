@@ -1,0 +1,172 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────
+   Chalk & Cobalt — design tokens
+   Cobalt carries every action. Brass appears five times on the
+   whole page and never as decoration.
+   ───────────────────────────────────────────────────────────── */
+@theme {
+  --color-ink: #101725;
+  --color-ink-soft: #5a6478;
+  --color-ink-faint: #616a7c; /* clears 4.5:1 on every ground it sits on — it carries labels, not decoration */
+  --color-paper: #eff1f6;
+  --color-paper-deep: #e4e8f1;
+  --color-card: #ffffff;
+  --color-cobalt: #1d3fc4;
+  --color-cobalt-deep: #16309a;
+  --color-cobalt-wash: #e7ebfa;
+  --color-brass: #8f631f; /* on paper and card */
+  --color-brass-lit: #c99648; /* the same accent, readable on the ink band */
+  --color-rule: #dde1ea;
+
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-voice: "Newsreader", ui-serif, Georgia, serif;
+  --font-khmer: "Kantumruy Pro", "Noto Sans Khmer", sans-serif;
+
+  --radius-card: 14px;
+  --radius-pill: 999px;
+
+  --shadow-card: 0 1px 2px rgb(16 23 37 / 0.04), 0 10px 30px -18px rgb(16 23 37 / 0.28);
+  --shadow-float: 0 2px 6px rgb(16 23 37 / 0.06), 0 22px 50px -26px rgb(16 23 37 / 0.4);
+
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  ::selection {
+    background: var(--color-cobalt);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-cobalt);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 11px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-paper);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #c3cad8;
+    border-radius: var(--radius-pill);
+    border: 3px solid var(--color-paper);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-faint);
+  }
+}
+
+/* Archivo's width axis. Display type runs wide; body stays normal. */
+@utility display-wide {
+  font-variation-settings: "wdth" 107;
+  letter-spacing: -0.028em;
+}
+
+/* The name gets the widest setting on the page, and nothing else does. */
+@utility display-hero {
+  font-variation-settings: "wdth" 118;
+  letter-spacing: -0.035em;
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Scroll reveal. Elements are visible by default and only hide
+   once JS confirms it can reveal them, so the page is readable
+   with JS disabled or mid-hydration.
+   ───────────────────────────────────────────────────────────── */
+[data-reveal] {
+  opacity: 1;
+}
+
+html.reveal-ready [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s var(--ease-out-soft),
+    transform 0.7s var(--ease-out-soft);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+html.reveal-ready [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Skill bars fill as their row is revealed. */
+.skill-fill {
+  transform-origin: left;
+  transition: transform 1s var(--ease-out-soft) 120ms;
+}
+
+html.reveal-ready [data-reveal] .skill-fill {
+  transform: scaleX(0);
+}
+
+html.reveal-ready [data-reveal].is-revealed .skill-fill {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  html.reveal-ready [data-reveal],
+  html.reveal-ready [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .skill-fill,
+  html.reveal-ready [data-reveal] .skill-fill {
+    transform: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
