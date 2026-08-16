@@ -1,65 +1,78 @@
-import React from 'react';
-import { SectionId } from '../types';
+import React, { useState } from 'react';
+import { ArrowUpRight } from 'lucide-react';
+import { Project, SectionId } from '../types';
 import { PROJECTS } from '../constants';
-import { Github, ExternalLink, Code } from 'lucide-react';
+import Section from './ui/Section';
+import SectionHeader from './SectionHeader';
+import Voice from './ui/Voice';
+import Badge from './ui/Badge';
+import ProjectCard from './projects/ProjectCard';
+import ProjectDetailDialog from './projects/ProjectDetailDialog';
+import { cn } from '../lib/utils';
 
 const Projects: React.FC = () => {
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
+
+  const featured = PROJECTS.filter((project) => project.featured);
+  const earlier = PROJECTS.filter((project) => !project.featured);
+
   return (
-    <section id={SectionId.PROJECTS} className="py-24 bg-slate-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Featured Projects</h2>
-            <p className="text-slate-400 max-w-2xl">
-              A selection of projects that demonstrate my passion for building robust web applications.
-            </p>
-          </div>
-          <button className="text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-2">
-            View Github <Github size={18} />
-          </button>
-        </div>
+    <Section id={SectionId.PROJECTS} width="wide">
+      <SectionHeader
+        eyebrow="Selected work"
+        title="A live product, commercial work, and a capstone"
+        description="The capstone appears twice on purpose: I designed the interface, then built it with a team."
+      />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {PROJECTS.map((project) => (
-            <div key={project.id} className="group bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-1">
-              {/* Image Area */}
-              <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={project.imageUrl} 
-                  alt={project.title} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-                    <a href={project.repoUrl} className="p-2 bg-white rounded-full text-slate-900 hover:bg-indigo-400 transition-colors" title="View Code">
-                        <Github size={20} />
-                    </a>
-                    <a href={project.demoUrl} className="p-2 bg-white rounded-full text-slate-900 hover:bg-indigo-400 transition-colors" title="Live Demo">
-                        <ExternalLink size={20} />
-                    </a>
-                </div>
-              </div>
+      <Voice className="mt-6">
+        The university projects are still below — that&rsquo;s where I learned how.
+      </Voice>
 
-              {/* Content Area */}
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
-                <p className="text-slate-400 text-sm mb-4 line-clamp-3">
-                  {project.description}
-                </p>
-                
-                {/* Tech Stack Tags */}
-                <div className="flex flex-wrap gap-2">
-                  {project.technologies.map(tech => (
-                    <span key={tech} className="px-2 py-1 bg-slate-800 text-indigo-300 text-xs rounded-md border border-slate-700">
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Never leave a single card alone on the last row: three columns only
+          when the count divides by three, two when it divides by two. */}
+      <div
+        className={cn(
+          'mt-14 grid gap-7 md:grid-cols-2',
+          featured.length % 3 === 0 || featured.length % 2 !== 0
+            ? 'lg:grid-cols-3'
+            : 'lg:grid-cols-2',
+        )}
+      >
+        {featured.map((project, index) => (
+          <ProjectCard key={project.id} project={project} index={index} onOpen={setActiveProject} />
+        ))}
       </div>
-    </section>
+
+      {earlier.length > 0 && (
+        <div data-reveal className="mt-16">
+          <h3 className="eyebrow">Earlier university projects</h3>
+          <ul className="mt-5 divide-y divide-rule overflow-hidden rounded-card border border-rule bg-card">
+            {earlier.map((project) => (
+              <li key={project.id}>
+                <button
+                  type="button"
+                  onClick={() => setActiveProject(project)}
+                  className="group flex w-full flex-wrap items-center gap-x-5 gap-y-2 px-5 py-5 text-left transition-colors hover:bg-paper sm:px-6"
+                >
+                  <span className="text-[1.0625rem] font-semibold text-ink">{project.title}</span>
+                  <span className="text-sm text-ink-soft">{project.subtitle}</span>
+                  <span className="ml-auto flex items-center gap-3">
+                    {/* Wrapped, not given `hidden`: Badge's own `inline-flex`
+                        is emitted later than `.hidden` and would win. */}
+                    <span className="hidden sm:block">
+                      <Badge variant="outline">{project.technologies[0]}</Badge>
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 text-ink-faint transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-cobalt" />
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <ProjectDetailDialog project={activeProject} onClose={() => setActiveProject(null)} />
+    </Section>
   );
 };
 

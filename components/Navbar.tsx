@@ -1,103 +1,152 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, Code2, Github, Linkedin, Mail } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Menu, X } from 'lucide-react';
 import { SectionId } from '../types';
 import { PERSONAL_INFO } from '../constants';
+import { ButtonLink } from './ui/Button';
+import { cn } from '../lib/utils';
+
+const navLinks = [
+  { label: 'Work', id: SectionId.PROJECTS },
+  { label: 'About', id: SectionId.CAPABILITIES },
+  { label: 'Skills', id: SectionId.SKILLS },
+  { label: 'Experience', id: SectionId.EXPERIENCE },
+  { label: 'Contact', id: SectionId.CONTACT },
+];
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string>(SectionId.HOME);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setIsScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const navLinks = [
-    { label: 'Home', href: `#${SectionId.HOME}` },
-    { label: 'Skills', href: `#${SectionId.SKILLS}` },
-    { label: 'Education', href: `#${SectionId.EDUCATION}` },
-    { label: 'Achievements', href: `#${SectionId.ACHIEVEMENTS}` },
-    { label: 'Experience', href: `#${SectionId.EXPERIENCE}` },
-    { label: 'Projects', href: `#${SectionId.PROJECTS}` },
-    { label: 'Contact', href: `#${SectionId.CONTACT}` },
-  ];
+  // Underline the section the reader is actually in.
+  useEffect(() => {
+    const sections = navLinks
+      .map((link) => document.getElementById(link.id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (sections.length === 0) return;
 
-  const handleNavClick = () => {
-    setMobileMenuOpen(false);
-  };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visible) setActiveId(visible.target.id);
+      },
+      { rootMargin: '-30% 0px -55% 0px' },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
+  // A menu that stays open behind you when the page moves is a bug.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (event: KeyboardEvent) => event.key === 'Escape' && setMenuOpen(false);
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, [menuOpen]);
 
   return (
-    <nav className={`fixed top-0 w-full z-40 transition-all duration-300 ${isScrolled ? 'bg-slate-950/80 backdrop-blur-md shadow-lg py-3' : 'bg-transparent py-5'}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
-          {/* Logo */}
-          <a href="#" className="flex items-center gap-2 group">
-            <div className="bg-indigo-600 p-2 rounded-lg group-hover:bg-indigo-500 transition-colors">
-              <Code2 className="text-white w-6 h-6" />
-            </div>
-            <span className="text-xl font-bold font-mono text-white tracking-tight">
-              Makara<span className="text-indigo-400 font-mono">Sok</span>
+    <header
+      className={cn(
+        'fixed inset-x-0 top-0 z-50 transition-colors duration-300',
+        isScrolled || menuOpen
+          ? 'border-b border-rule bg-paper/85 backdrop-blur-md'
+          : 'border-b border-transparent',
+      )}
+    >
+      <nav className="mx-auto flex h-18 max-w-[86rem] items-center justify-between gap-6 px-5 sm:px-8">
+        <a href={`#${SectionId.HOME}`} className="flex items-center gap-3" aria-label="Back to top">
+          <span className="grid h-10 w-10 place-items-center rounded-[11px] bg-ink font-display text-sm font-bold text-white">
+            SM
+          </span>
+          <span className="leading-tight">
+            <span className="block font-khmer text-[0.9375rem] font-semibold text-ink">
+              {PERSONAL_INFO.nameKhmer}
             </span>
-          </a>
+            <span className="eyebrow block text-[0.625rem]">{PERSONAL_INFO.role}</span>
+          </span>
+        </a>
 
-          {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
-            <ul className="flex gap-6 xl:gap-8">
-              {navLinks.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-sm font-medium text-slate-300 hover:text-white hover:text-indigo-400 transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <div className="flex gap-4 border-l border-slate-700 pl-6">
-              <a href={`https://${PERSONAL_INFO.github}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors"><Github size={20} /></a>
-              <a href={`https://${PERSONAL_INFO.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors"><Linkedin size={20} /></a>
-              <a href={`mailto:${PERSONAL_INFO.email}`} className="text-slate-400 hover:text-white transition-colors"><Mail size={20} /></a>
-            </div>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden text-slate-300 hover:text-white p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 w-full bg-slate-900 border-b border-slate-800 shadow-xl">
-          <ul className="flex flex-col py-4">
-            {navLinks.map((link) => (
-              <li key={link.label}>
+        <ul className="hidden items-center gap-1 lg:flex">
+          {navLinks.map((link) => {
+            const isActive = activeId === link.id;
+            return (
+              <li key={link.id}>
                 <a
-                  href={link.href}
-                  className="block px-6 py-3 text-slate-300 hover:bg-slate-800 hover:text-indigo-400 font-medium transition-colors"
-                  onClick={handleNavClick}
+                  href={`#${link.id}`}
+                  aria-current={isActive ? 'true' : undefined}
+                  className={cn(
+                    'relative px-3.5 py-2 font-mono text-xs tracking-[0.12em] uppercase transition-colors',
+                    isActive ? 'text-cobalt' : 'text-ink-soft hover:text-ink',
+                  )}
                 >
                   {link.label}
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'absolute inset-x-3.5 -bottom-0.5 h-px origin-left bg-cobalt transition-transform duration-300',
+                      isActive ? 'scale-x-100' : 'scale-x-0',
+                    )}
+                  />
                 </a>
               </li>
-            ))}
-            <li className="px-6 py-4 flex gap-6 border-t border-slate-800 mt-2">
-              <a href={`https://${PERSONAL_INFO.github}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white"><Github size={24} /></a>
-              <a href={`https://${PERSONAL_INFO.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors"><Linkedin size={20} /></a>
-              <a href={`mailto:${PERSONAL_INFO.email}`} className="text-slate-400 hover:text-white"><Mail size={24} /></a>
-            </li>
-          </ul>
+            );
+          })}
+        </ul>
+
+        <div className="flex items-center gap-2">
+          {/* Wrapped rather than given `hidden`: the button's own `inline-flex`
+              is emitted after `.hidden` in Tailwind's output and would win. */}
+          <span className="hidden sm:block">
+            <ButtonLink href={`mailto:${PERSONAL_INFO.email}`} variant="outline" size="sm">
+              Email me
+            </ButtonLink>
+          </span>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            className="grid h-10 w-10 place-items-center rounded-[11px] border border-rule bg-card text-ink lg:hidden"
+          >
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
-      )}
-    </nav>
+      </nav>
+
+      <div
+        id="mobile-nav"
+        hidden={!menuOpen}
+        className="border-t border-rule bg-paper px-5 pb-6 sm:px-8 lg:hidden"
+      >
+        <ul className="flex flex-col py-2">
+          {navLinks.map((link) => (
+            <li key={link.id}>
+              <a
+                href={`#${link.id}`}
+                onClick={() => setMenuOpen(false)}
+                className="block border-b border-rule/70 py-3.5 font-mono text-xs tracking-[0.12em] text-ink-soft uppercase last:border-0 hover:text-cobalt"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <ButtonLink href={`mailto:${PERSONAL_INFO.email}`} size="md" className="mt-2 w-full">
+          Email me
+        </ButtonLink>
+      </div>
+    </header>
   );
 };
 

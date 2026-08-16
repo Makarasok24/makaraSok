@@ -1,55 +1,90 @@
 import React from 'react';
-import { SectionId } from '../types';
 import { EXPERIENCE } from '../constants';
-import { Briefcase } from 'lucide-react';
+import { Experience as ExperienceEntry, SectionId } from '../types';
+import Section from './ui/Section';
+import SectionHeader from './SectionHeader';
+import Voice from './ui/Voice';
+import { cn } from '../lib/utils';
 
-const Experience: React.FC = () => {
-  return (
-    <section id={SectionId.EXPERIENCE} className="py-24 bg-slate-900/30">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Work Experience</h2>
-          <p className="text-slate-400">My professional journey and career milestones.</p>
-        </div>
-
-        <div className="relative space-y-12">
-            {/* Vertical Line */}
-            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-slate-800 -translate-x-1/2 md:translate-x-0" />
-
-            {EXPERIENCE.map((job, index) => (
-                <div key={job.id} className={`relative flex flex-col md:flex-row gap-8 ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
-                    
-                    {/* Timeline Dot */}
-                    <div className="absolute left-4 md:left-1/2 w-8 h-8 rounded-full bg-slate-900 border-4 border-indigo-600 -translate-x-1/2 flex items-center justify-center z-10">
-                        <div className="w-2.5 h-2.5 rounded-full bg-white" />
-                    </div>
-
-                    {/* Content Card */}
-                    <div className={`ml-12 md:ml-0 md:w-1/2 ${index % 2 === 0 ? 'md:pl-12' : 'md:pr-12 text-right'}`}>
-                        <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-lg hover:border-indigo-500/30 transition-colors">
-                            <span className="inline-block px-3 py-1 bg-indigo-500/10 text-indigo-400 text-xs font-semibold rounded-full mb-3">
-                                {job.period}
-                            </span>
-                            <h3 className="text-xl font-bold text-white mb-1">{job.role}</h3>
-                            <h4 className="text-lg text-slate-300 mb-4 flex items-center gap-2 justify-start md:justify-inherit">
-                                <Briefcase className="w-4 h-4 text-slate-500" />
-                                {job.company}
-                            </h4>
-                            <ul className="space-y-2">
-                                {job.description.map((desc, i) => (
-                                    <li key={i} className="text-slate-400 text-sm leading-relaxed">
-                                        • {desc}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            ))}
-        </div>
-      </div>
-    </section>
-  );
+/**
+ * The timeline is typed rather than merely chronological: each role is tagged
+ * with the kind of work it was, because the split between them is the point.
+ */
+const kindStyles: Record<ExperienceEntry['kind'], { label: string; chip: string; dot: string }> = {
+  engineering: { label: 'Engineering', chip: 'bg-cobalt-wash text-cobalt-deep', dot: 'bg-cobalt' },
+  teaching: { label: 'Teaching', chip: 'bg-brass/12 text-brass', dot: 'bg-brass' },
+  operations: { label: 'Operations', chip: 'bg-paper-deep text-ink-soft', dot: 'bg-ink-faint' },
 };
+
+const Experience: React.FC = () => (
+  <Section id={SectionId.EXPERIENCE}>
+    <SectionHeader
+      eyebrow="Experience"
+      title="Seven roles, three of them teaching"
+      description="Two internships, exam operations, and the classrooms in between."
+    />
+
+    <Voice className="mt-6">That split wasn&rsquo;t an accident, and it&rsquo;s the useful part.</Voice>
+
+    <ol className="mt-14 border-l border-rule pl-7 sm:pl-9">
+      {EXPERIENCE.map((entry, index) => {
+        const kind = kindStyles[entry.kind];
+        // Two roles at the same employer read as one progression, not two jobs:
+        // the repeated company name is dropped and the pair sits closer together.
+        const continuesAbove = index > 0 && EXPERIENCE[index - 1].company === entry.company;
+        const groupedWithBelow = EXPERIENCE[index + 1]?.company === entry.company;
+        return (
+          <li
+            key={entry.id}
+            data-reveal
+            style={{ '--reveal-delay': `${index * 70}ms` } as React.CSSProperties}
+            className={cn('relative last:pb-0', groupedWithBelow ? 'pb-6' : 'pb-11')}
+          >
+            <span
+              aria-hidden="true"
+              className={cn(
+                'absolute top-1.5 -left-[calc(1.75rem+4.5px)] h-2.5 w-2.5 rounded-full ring-4 ring-paper sm:-left-[calc(2.25rem+4.5px)]',
+                kind.dot,
+              )}
+            />
+
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="font-mono text-[0.6875rem] tracking-wide text-ink-faint">
+                {entry.period}
+              </span>
+              {!continuesAbove && (
+                <span
+                  className={cn(
+                    'rounded-pill px-2.5 py-1 font-mono text-[0.625rem] tracking-widest uppercase',
+                    kind.chip,
+                  )}
+                >
+                  {kind.label}
+                </span>
+              )}
+            </div>
+
+            <h3 className="mt-3 text-xl font-semibold text-ink">{entry.role}</h3>
+            {!continuesAbove && (
+              <p className="mt-1 text-[0.9375rem] text-ink-soft">{entry.company}</p>
+            )}
+
+            <ul className="mt-4 space-y-2">
+              {entry.description.map((line) => (
+                <li key={line} className="flex gap-3 text-[0.9375rem] leading-relaxed text-ink-soft">
+                  <span
+                    aria-hidden="true"
+                    className="mt-2.5 h-px w-3.5 shrink-0 bg-rule"
+                  />
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        );
+      })}
+    </ol>
+  </Section>
+);
 
 export default Experience;

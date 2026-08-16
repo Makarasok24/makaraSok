@@ -1,101 +1,205 @@
-import React from 'react';
-import { ArrowRight } from 'lucide-react';
-import Button from './Button';
-import { PERSONAL_INFO } from '../constants';
+import React, { useEffect, useState } from 'react';
+import { ArrowRight, Github, Linkedin, MapPin } from 'lucide-react';
+import { ButtonLink } from './ui/Button';
+import Voice from './ui/Voice';
+import { CV_PATH, HAS_CV, PERSONAL_INFO, PORTRAIT_PATH, STATS } from '../constants';
 import { SectionId } from '../types';
+import { cn } from '../lib/utils';
 
 const Hero: React.FC = () => {
+  const hasPortrait = usePortrait(PORTRAIT_PATH);
+
   return (
-    <section id={SectionId.HOME} className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px]" />
-      </div>
+    <section id={SectionId.HOME} className="pt-28 pb-16 md:pt-36 md:pb-20">
+      <div className="mx-auto max-w-[86rem] px-5 sm:px-8">
+        <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10">
+          <div data-reveal>
+            <p className="inline-flex items-center gap-2.5 rounded-pill border border-rule bg-card py-1.5 pr-4 pl-2.5 shadow-card">
+              <span className="relative grid h-2 w-2 place-items-center">
+                <span className="absolute h-2 w-2 animate-ping rounded-full bg-cobalt/50" />
+                <span className="h-2 w-2 rounded-full bg-cobalt" />
+              </span>
+              <span className="font-mono text-[0.6875rem] tracking-[0.1em] text-ink-soft uppercase">
+                {PERSONAL_INFO.availability}
+              </span>
+            </p>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-12">
-        {/* Text Content */}
-        <div className="flex-1 space-y-8 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700 text-indigo-400 text-sm font-medium">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-            </span>
-            Available for hire
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight leading-tight">
-            <span className="block text-3xl md:text-4xl text-slate-300 font-medium mb-2">Hello, I'm {PERSONAL_INFO.name}</span>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-              {PERSONAL_INFO.role}
-            </span>
-          </h1>
-          
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto md:mx-0 leading-relaxed">
-            {PERSONAL_INFO.bio}
-          </p>
+            <p className="mt-8 font-khmer text-xl font-semibold text-brass">
+              {PERSONAL_INFO.nameKhmer}
+            </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-            <a href={`#${SectionId.PROJECTS}`}>
-              <Button size="lg" className="w-full sm:w-auto gap-2 group">
-                View Projects
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </a>
-            <a href={`#${SectionId.CONTACT}`}>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto gap-2">
-                Contact Me
-              </Button>
-            </a>
+            <h1 className="display-hero mt-1 text-[3.25rem] leading-[0.92] font-bold text-ink sm:text-7xl lg:text-[5.25rem]">
+              {PERSONAL_INFO.name}
+            </h1>
+
+            <p className="display-wide mt-5 text-[1.75rem] leading-[1.15] font-medium text-ink-soft sm:text-4xl">
+              Software Engineer,{' '}
+              <span className="block text-cobalt sm:inline">frontend focused.</span>
+            </p>
+
+            <p className="mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-pretty text-ink-soft">
+              {PERSONAL_INFO.bio}
+            </p>
+
+            <Voice className="mt-6">
+              Which means I can explain my work, not just ship it.
+            </Voice>
+
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <ButtonLink href={`#${SectionId.PROJECTS}`} size="lg" className="group">
+                See my work
+                <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+              </ButtonLink>
+              {HAS_CV && (
+                <ButtonLink href={CV_PATH} variant="outline" size="lg" download>
+                  Download CV
+                </ButtonLink>
+              )}
+              <ButtonLink href={`mailto:${PERSONAL_INFO.email}`} variant="outline" size="lg">
+                Email me
+              </ButtonLink>
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 font-mono text-xs text-ink-faint">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" />
+                {PERSONAL_INFO.location}
+              </span>
+              <a
+                href={`https://${PERSONAL_INFO.github}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 transition-colors hover:text-cobalt"
+              >
+                <Github className="h-3.5 w-3.5" />
+                GitHub
+              </a>
+              <a
+                href={`https://${PERSONAL_INFO.linkedin}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 transition-colors hover:text-cobalt"
+              >
+                <Linkedin className="h-3.5 w-3.5" />
+                LinkedIn
+              </a>
+            </div>
           </div>
+
+          <Portrait hasPortrait={hasPortrait} />
         </div>
 
-        {/* Visual Element (Mock Code Window) */}
-        <div className="flex-1 w-full max-w-lg relative hidden md:block">
-           <div className="relative rounded-xl bg-slate-900 border border-slate-700 shadow-2xl p-4 rotate-3 hover:rotate-0 transition-transform duration-500">
-             <div className="flex gap-2 mb-4 border-b border-slate-800 pb-2">
-               <div className="w-3 h-3 rounded-full bg-red-500" />
-               <div className="w-3 h-3 rounded-full bg-yellow-500" />
-               <div className="w-3 h-3 rounded-full bg-green-500" />
-             </div>
-             <div className="font-mono text-sm space-y-2">
-               <div className="flex">
-                 <span className="text-pink-500 mr-2">const</span>
-                 <span className="text-blue-400">developer</span>
-                 <span className="text-white mr-2"> = </span>
-                 <span className="text-yellow-300">{"{"}</span>
-               </div>
-               <div className="pl-4">
-                 <span className="text-indigo-300">name:</span> <span className="text-green-400">"{PERSONAL_INFO.name}"</span>,
-               </div>
-               <div className="pl-4">
-                 <span className="text-indigo-300">role:</span> <span className="text-green-400">"{PERSONAL_INFO.role}"</span>,
-               </div>
-               <div className="pl-4">
-                 <span className="text-indigo-300">focus:</span> <span className="text-green-400">"Front-End"</span>,
-               </div>
-               <div className="pl-4">
-                  <span className="text-indigo-300">passionate:</span> <span className="text-purple-400">true</span>
-               </div>
-               <div className="text-yellow-300">{"}"}</div>
-               <div className="flex pt-2">
-                 <span className="text-blue-400">developer</span>
-                 <span className="text-white">.</span>
-                 <span className="text-yellow-200">code</span>
-                 <span className="text-white">()</span>
-                 <span className="text-white">;</span>
-                 <span className="ml-2 w-2 h-5 bg-indigo-500 animate-pulse inline-block align-middle"></span>
-               </div>
-             </div>
-           </div>
-           
-           {/* Decorative Elements behind code block */}
-           <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-indigo-600 rounded-lg -z-10 opacity-50" />
-           <div className="absolute -top-6 -left-6 w-24 h-24 border-2 border-slate-700 rounded-lg -z-10" />
-        </div>
+        <StatRow />
       </div>
     </section>
   );
 };
+
+const Portrait: React.FC<{ hasPortrait: boolean }> = ({ hasPortrait }) => (
+  <div
+    data-reveal
+    style={{ '--reveal-delay': '140ms' } as React.CSSProperties}
+    className="relative mx-auto w-full max-w-104 lg:max-w-none"
+  >
+    <div
+      className={cn(
+        'overflow-hidden rounded-4xl border border-rule bg-linear-to-b from-cobalt-wash to-paper-deep',
+        // Without a photo the tall crop is mostly empty, so it squares up.
+        hasPortrait ? 'aspect-4/5' : 'aspect-square',
+      )}
+    >
+      {hasPortrait ? (
+        <img
+          src={PORTRAIT_PATH}
+          alt={`${PERSONAL_INFO.name}, software engineer`}
+          className="h-full w-full object-cover object-top"
+          width={520}
+          height={650}
+        />
+      ) : (
+        <div className="grid h-full place-items-center px-8 text-center">
+          <div>
+            <p className="font-khmer text-5xl leading-tight font-bold text-brass sm:text-6xl">
+              {PERSONAL_INFO.nameKhmer}
+            </p>
+            <p className="mx-auto mt-6 h-px w-14 bg-brass/35" />
+            <p className="eyebrow mt-6">{PERSONAL_INFO.location}</p>
+          </div>
+        </div>
+      )}
+    </div>
+
+    {/* Below lg these sit under the panel; only from lg do they float over it,
+        where there is room to do so without covering anything. */}
+    <div className="mt-4 grid grid-cols-2 gap-3 lg:mt-0 lg:block">
+      <FloatCard
+        className="lg:absolute lg:bottom-28 lg:-left-10"
+        label="Taught at"
+        value="3 schools"
+        note="Since 2023"
+      />
+      <FloatCard
+        className="lg:absolute lg:-right-6 lg:bottom-16"
+        label="Now at"
+        value="Dataticon"
+        note="Software Developer"
+      />
+    </div>
+  </div>
+);
+
+interface FloatCardProps {
+  label: string;
+  value: string;
+  note: string;
+  className?: string;
+}
+
+const FloatCard: React.FC<FloatCardProps> = ({ label, value, note, className }) => (
+  <div
+    className={cn(
+      'rounded-card border border-rule bg-card/95 p-4 shadow-card backdrop-blur-sm lg:w-46 lg:shadow-float',
+      className,
+    )}
+  >
+    <p className="eyebrow text-[0.625rem]">{label}</p>
+    <p className="mt-1.5 text-[0.9375rem] leading-snug font-semibold text-ink">{value}</p>
+    <p className="mt-1 font-mono text-[0.6875rem] text-ink-faint">{note}</p>
+  </div>
+);
+
+const StatRow: React.FC = () => (
+  <dl
+    data-reveal
+    style={{ '--reveal-delay': '220ms' } as React.CSSProperties}
+    className="mt-16 grid gap-px overflow-hidden rounded-card border border-rule bg-rule sm:grid-cols-3 md:mt-20"
+  >
+    {STATS.map((stat) => (
+      <div key={stat.label} className="bg-card px-6 py-6">
+        <dt className="eyebrow">{stat.label}</dt>
+        <dd className="display-wide mt-2 text-2xl font-semibold text-ink">{stat.value}</dd>
+      </div>
+    ))}
+  </dl>
+);
+
+/**
+ * Resolves the portrait before rendering it, so a missing file falls back to
+ * the typographic hero instead of flashing a broken image.
+ */
+function usePortrait(src: string) {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const image = new Image();
+    image.onload = () => setLoaded(true);
+    image.src = src;
+    return () => {
+      image.onload = null;
+    };
+  }, [src]);
+
+  return loaded;
+}
 
 export default Hero;

@@ -1,11 +1,40 @@
 export interface Project {
   id: string;
   title: string;
+  /** Featured projects get a full card; the rest appear in a compact list. */
+  featured: boolean;
+  /** Where it came from: "My own product", "Capstone project", and so on. */
+  context: string;
+  subtitle: string;
   description: string;
+  /** Omit and the card renders a typographic panel instead of a screenshot. */
+  imageUrl?: string;
   technologies: string[];
-  imageUrl: string;
-  demoUrl?: string;
+
+  liveUrl?: string;
+  videoUrl?: string;
   repoUrl?: string;
+  /** Figma file. Signals design work as well as build work. */
+  figmaUrl?: string;
+
+  /**
+   * The deep dive. All optional: a project with none of these renders a short
+   * honest case rather than a set of empty headings.
+   */
+  tools?: string[];
+  whyBuilt?: string;
+  objective?: string;
+  role?: string;
+  collaboration?: string;
+  teamMembers?: TeamMember[];
+  highlights?: string[];
+}
+
+export interface TeamMember {
+  name: string;
+  role: string;
+  /** GitHub username only, e.g. "Makarasok24" — the URL is built from it. */
+  github?: string;
 }
 
 export interface Experience {
@@ -13,6 +42,7 @@ export interface Experience {
   company: string;
   role: string;
   period: string;
+  kind: 'teaching' | 'engineering' | 'operations';
   description: string[];
 }
 
@@ -26,9 +56,11 @@ export interface Education {
 
 export interface Skill {
   name: string;
-  level: number; // 0-100
-  category: 'frontend' | 'backend' | 'devops' | 'tools' | 'soft skills' | 'languages';
+  level: number; // 0-100, self-assessed
+  category: SkillCategory;
 }
+
+export type SkillCategory = 'frontend' | 'backend' | 'soft skills' | 'languages';
 
 export interface Achievement {
   id: string;
@@ -39,20 +71,36 @@ export interface Achievement {
   description: string;
 }
 
-export interface ChatMessage {
+export interface Stat {
+  value: string;
+  label: string;
+}
+
+export interface Capability {
   id: string;
-  role: 'user' | 'model';
-  text: string;
-  isStreaming?: boolean;
+  title: string;
+  description: string;
+}
+
+export interface ProcessStep {
+  title: string;
+  description: string;
+}
+
+export interface TeachingRecord {
+  year: string;
+  place: string;
+  detail: string;
 }
 
 export enum SectionId {
   HOME = 'home',
-  ABOUT = 'about',
+  PROJECTS = 'work',
+  CAPABILITIES = 'about',
+  TEACHING = 'teaching',
   SKILLS = 'skills',
   EXPERIENCE = 'experience',
-  EDUCATION = 'education',
-  PROJECTS = 'projects',
-  ACHIEVEMENTS = 'achievements',
+  BACKGROUND = 'background',
+  PROCESS = 'process',
   CONTACT = 'contact',
 }
